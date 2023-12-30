@@ -17,9 +17,10 @@ import java.util.Set;
  * @author skndr
  */
 public class hotel {
-    private Set<client> lclients ;
-    private List<chambre> lchambre ;
-    private Map<client,chambre> lres ;
+    private final Set<client> lclients ;
+    private final List<chambre> lchambre ;
+    private final Map<client,chambre> lres ;
+   
     public hotel(){
         this.lclients=new HashSet<client>();
         this.lchambre = new ArrayList<chambre>();
@@ -30,6 +31,7 @@ public class hotel {
     }
     
     public boolean existeChambre(int numChambre){
+        
         Iterator<chambre> it = lchambre.iterator();
         while (it.hasNext()){
             if (it.next().getNumChbr()==numChambre){
@@ -37,35 +39,33 @@ public class hotel {
             }
         }
         return false; 
+
     }
     public boolean verifDispo(chambre ch , int nblit){
-        for(chambre c : lchambre){
-            if (this.existeChambre(ch.getNumChbr()) && c.getNbLitDisp()>=nblit && c.getEtat().equals("libre")){
-                return true ;
-            }
+        if (this.existeChambre(ch.getNumChbr()) && ch.getNbLitDisp()>=nblit && ch.getEtat().equals("libre")){
+            return true ;
         }
         return false ;
+       
     }
     public boolean reserver(client cl , chambre ch) throws ChambreException{
         if (lres.containsValue(ch)==true){
             throw new ChambreException("Chambre"+ch.getNumChbr()+" deja Reservée",ch) ;
-        } else if (lres.containsKey(cl)==false && lchambre.contains(ch)){
-            for (chambre c : lchambre){
-                if (c.equals(ch)){
-                    if (c.getNbLitDisp()==0){
-                        throw new ChambreException("chambre"+ c.getNumChbr()+" n'a pas de lit dispo", ch);
+        } else if (lres.containsKey(cl)==false && existeChambre(ch.getNumChbr())){
+                    if (ch.getNbLitDisp()==0){
+                        throw new ChambreException("chambre"+ ch.getNumChbr()+" n'a pas de lit dispo", ch);
                     }
-                    if(c.getEtat().equals("libre")){
-                    c.setEtat("reserve");
-                    lres.put(cl, c);
+                    else if(ch.getEtat().equals("libre")){
+                    ch.setEtat("reserve");
+                    lres.put(cl, ch);
                     return true ;
                     }
                     
                 }
-            }
+                    return false ;
+
         }
-        return false ;
-    }
+    
     public boolean annulerReservation(client cl) throws NullPointerException{
         if (cl==null){
             throw new NullPointerException(toString());
@@ -95,25 +95,23 @@ public class hotel {
             throw new ChambreException("Chambre"+c2.getNumChbr()+" deja Reservée",c2) ;
         }
         else {
-            for (chambre ch : lchambre){
-                if (ch.equals(c2)){
+           if (existeChambre(c2.getNumChbr()))
                     if (c2.getNbLitDisp()==0){
                         throw new ChambreException("chambre"+ c2.getNumChbr()+" n'a pas de lit dispo", c2);
                     }
                     else {
                         lres.get(cl).setEtat("reserve");
-                        lres.get(cl).setNumChbr(lres.get(cl).getNumChbr());
-                        lres.get(cl).setNumChbr(lres.get(cl).getNbLitDisp());
+                        lres.get(cl).setNumChbr(lres.get(c1).getNumChbr());
+                        lres.get(cl).setNumChbr(lres.get(c1).getNbLitDisp());
+                        c1.setEtat("libre");
                         return true ;
                     }
                 }
-                if (ch.equals(c1)){
-                    ch.setEtat("libre");
-                }
-            }
+                
+            return false ;
         }
-        return false ;
-    }
+        
+    
     public void afficheTous(){
         for (Map.Entry<client,chambre> en : lres.entrySet()){
             System.out.println(en.toString());
